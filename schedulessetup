@@ -1,0 +1,4 @@
+npx @trigger.dev/cli schedule create scrape-articles --cron "*/30 * * * *"
+npx @trigger.dev/cli schedule create rewrite-articles --cron "0 */2 * * *"
+npx @trigger.dev/cli schedule create publish-articles --cron "0 */3 * * *"
+npx @trigger.dev/cli schedule create deduplicate-articles --cron "0 2 * * *"
