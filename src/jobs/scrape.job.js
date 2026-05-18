@@ -1,4 +1,4 @@
-import { task } from "@trigger.dev/sdk";
+import { schedules } from "@trigger.dev/sdk";
 import { config } from "../config/index.js";
 import { getSupabase } from "../db/supabase.js";
 import { ScraperService } from "../services/scraper.js";
@@ -13,9 +13,10 @@ import { logJobError } from "../services/errorLogger.js";
  * Scheduled task that scrapes Nigerian news sources and stores articles in Supabase
  * Trigger: Cron schedule (default: every 30 minutes)
  */
-export const scrapeJob = task({
+export const scrapeJob = schedules.task({
   id: "scrape-articles",
   description: "Scrape Nigerian news sources and store raw articles",
+  cron: "*/30 * * * *",
   machine: "micro",
   run: async (payload) => {
     const supabase = getSupabase();

@@ -1,4 +1,4 @@
-import { task } from "@trigger.dev/sdk";
+import { schedules } from "@trigger.dev/sdk";
 import { config } from "../config/index.js";
 import { getSupabase } from "../db/supabase.js";
 import { PublisherService } from "../services/publisher.js";
@@ -11,9 +11,10 @@ import { logJobError } from "../services/errorLogger.js";
  * Scheduled task that publishes rewritten articles to WordPress
  * Trigger: Cron schedule (default: every 3 hours)
  */
-export const publishJob = task({
+export const publishJob = schedules.task({
   id: "publish-articles",
   description: "Publish rewritten articles to WordPress",
+  cron: "0 */3 * * *",
   machine: "small-1x",
   run: async (payload) => {
     const supabase = getSupabase();

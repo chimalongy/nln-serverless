@@ -1,4 +1,4 @@
-import { task } from "@trigger.dev/sdk";
+import { schedules } from "@trigger.dev/sdk";
 import { config } from "../config/index.js";
 import { getSupabase } from "../db/supabase.js";
 import { RewriterService } from "../services/rewriter.js";
@@ -11,9 +11,10 @@ import { logJobError } from "../services/errorLogger.js";
  * Scheduled task that fetches scraped articles and rewrites them using AI
  * Trigger: Cron schedule (default: every 2 hours)
  */
-export const rewriteJob = task({
+export const rewriteJob = schedules.task({
   id: "rewrite-articles",
   description: "Rewrite scraped Nigerian news articles using AI",
+  cron: "0 */2 * * *",
   machine: "small-1x",
   run: async (payload) => {
     const supabase = getSupabase();

@@ -1,4 +1,4 @@
-import { task } from "@trigger.dev/sdk";
+import { schedules } from "@trigger.dev/sdk";
 import { getSupabase } from "../db/supabase.js";
 import { DeduplicatorService } from "../services/deduplicator.js";
 import { logger } from "../utils/logger.js";
@@ -13,9 +13,10 @@ import { logJobError } from "../services/errorLogger.js";
  * 3. Cleans up old content hashes
  * Trigger: Cron schedule (default: daily at 2 AM)
  */
-export const deduplicateJob = task({
+export const deduplicateJob = schedules.task({
   id: "deduplicate-articles",
   description: "Deduplicate articles and cleanup old records",
+  cron: "0 2 * * *",
   machine: "micro",
   run: async (payload) => {
     const supabase = getSupabase();
