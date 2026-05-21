@@ -3,12 +3,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Settings, Activity, AlertCircle, Menu, X } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, AlertCircle, Menu, X } from 'lucide-react';
 
 const navLinks = [
     { href: '/', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/articles', label: 'Articles', icon: FileText },
-    { href: '/sources', label: 'Sources', icon: Activity },
     { href: '/errors', label: 'Error Logs', icon: AlertCircle },
     { href: '/settings', label: 'Settings', icon: Settings },
 ];

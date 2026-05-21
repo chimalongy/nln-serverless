@@ -6,17 +6,6 @@ export const revalidate = 60;
 
 async function getSettingsData() {
   try {
-    // Fetch sources count
-    const { count: sourcesCount } = await supabase
-      .from('sources')
-      .select('*', { count: 'exact', head: true });
-
-    // Fetch active sources count
-    const { count: activeSourcesCount } = await supabase
-      .from('sources')
-      .select('*', { count: 'exact', head: true })
-      .eq('is_active', true);
-
     // Fetch API keys count (by provider)
     const { data: apiKeys } = await supabase
       .from('api_keys')
@@ -41,8 +30,6 @@ async function getSettingsData() {
       .single();
 
     return {
-      sourcesCount: sourcesCount || 0,
-      activeSourcesCount: activeSourcesCount || 0,
       apiKeys: apiKeys || [],
       statusCounts,
       syncState,
@@ -50,8 +37,6 @@ async function getSettingsData() {
   } catch (error) {
     console.error('Failed to fetch settings data:', error);
     return {
-      sourcesCount: 0,
-      activeSourcesCount: 0,
       apiKeys: [],
       statusCounts: {},
       syncState: null,
@@ -60,7 +45,7 @@ async function getSettingsData() {
 }
 
 export default async function SettingsPage() {
-  const { sourcesCount, activeSourcesCount, apiKeys, statusCounts, syncState } = await getSettingsData();
+  const { apiKeys, statusCounts, syncState } = await getSettingsData();
 
   const totalArticles = Object.values(statusCounts).reduce((a, b) => a + b, 0);
 
@@ -83,8 +68,7 @@ export default async function SettingsPage() {
       </div>
 
       {/* Quick Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <QuickStat icon={<Globe size={18} />} label="News Sources" value={`${activeSourcesCount} / ${sourcesCount}`} color="text-blue-400" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <QuickStat icon={<Key size={18} />} label="API Keys" value={apiKeys.length} color="text-amber-400" />
         <QuickStat icon={<Database size={18} />} label="Total Articles" value={totalArticles} color="text-green-400" />
         <QuickStat icon={<Zap size={18} />} label="Published" value={statusCounts.published || 0} color="text-purple-400" />
@@ -156,10 +140,8 @@ export default async function SettingsPage() {
         </div>
 
         <div className="space-y-3">
-          <ScheduleRow emoji="🔍" job="scrape-articles" cron={process.env.SCRAPE_SCHEDULE || '*/30 * * * *'} description="Scrape news sources for new articles" />
-          <ScheduleRow emoji="✍️" job="rewrite-articles" cron={process.env.REWRITE_SCHEDULE || '0 */2 * * *'} description="AI-rewrite scraped articles" />
-          <ScheduleRow emoji="📤" job="publish-articles" cron={process.env.PUBLISH_SCHEDULE || '0 */3 * * *'} description="Publish rewritten articles to WordPress" />
-          <ScheduleRow emoji="🧹" job="deduplicate-articles" cron={process.env.DEDUPLICATE_SCHEDULE || '0 2 * * *'} description="Daily deduplication and cleanup" />
+          <ScheduleRow emoji="📰" job="naijanews-action" cron={process.env.NAIJA_NEWS_SCHEDULE || '*/15 * * * *'} description="Scrape, rewrite, and publish NaijaNews articles" />
+          <ScheduleRow emoji="🎬" job="gistreel-action" cron={process.env.GISTREEL_SCHEDULE || '*/15 * * * *'} description="Scrape, rewrite, and publish GistReel articles" />
         </div>
       </section>
 

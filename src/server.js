@@ -91,26 +91,6 @@ app.get('/stats', async (req, res) => {
 });
 
 /**
- * GET /sources
- * Active news sources
- */
-app.get('/sources', async (req, res) => {
-  try {
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-      .from('sources')
-      .select('*')
-      .order('name');
-
-    if (error) throw error;
-
-    res.json({ sources: data || [] });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-/**
  * GET /articles
  * List articles with optional status filter
  */
@@ -150,7 +130,7 @@ const PORT = config.port || 3000;
 if (require.main === module) {
   app.listen(PORT, () => {
     logger.info(`Health check server running on port ${PORT}`);
-    logger.info(`Endpoints: http://localhost:${PORT}/health, /stats, /articles, /sources`);
+    logger.info(`Endpoints: http://localhost:${PORT}/health, /stats, /articles`);
   });
 }
 

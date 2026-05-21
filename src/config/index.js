@@ -55,10 +55,8 @@ const config = {
 
   // Scheduling (cron expressions)
   schedules: {
-    scrape: process.env.SCRAPE_SCHEDULE || '*/30 * * * *',
-    rewrite: process.env.REWRITE_SCHEDULE || '0 */2 * * *',
-    publish: process.env.PUBLISH_SCHEDULE || '0 */3 * * *',
-    deduplicate: process.env.DEDUPLICATE_SCHEDULE || '0 2 * * *',
+    naijaNews: process.env.NAIJA_NEWS_SCHEDULE || '*/15 * * * *',
+    gistReel: process.env.GISTREEL_SCHEDULE || '*/15 * * * *',
   },
 };
 

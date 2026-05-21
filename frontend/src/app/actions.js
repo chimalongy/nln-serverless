@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { tasks, runs, configure } from '@trigger.dev/sdk/v3';
+import { supabase } from '@/lib/supabase';
 
 /**
  * Configure Trigger.dev SDK with the API key.
@@ -17,81 +18,99 @@ function ensureTriggerConfig() {
 }
 
 /**
- * Trigger the scrape-articles task manually.
- * Uses the Trigger.dev v4 SDK to trigger the task by its ID.
+ * Trigger the news jobs manually.
+ * Uses the Trigger.dev SDK to trigger both jobs.
  */
 export async function triggerScrapeJob() {
   try {
     ensureTriggerConfig();
 
-    const handle = await tasks.trigger('scrape-articles', {
-      manual: true,
-      timestamp: new Date().toISOString(),
-    });
+    const [naijanews, gistreel] = await Promise.all([
+      tasks.trigger('naijanews-action', { manual: true, timestamp: new Date().toISOString() }),
+      tasks.trigger('gistreel-action', { manual: true, timestamp: new Date().toISOString() }),
+    ]);
 
     revalidatePath('/');
-    return { success: true, runId: handle.id };
+    return { success: true, runId: `${naijanews.id}, ${gistreel.id}` };
   } catch (error) {
-    console.error('Error triggering scrape job:', error);
+    console.error('Error triggering news jobs:', error);
     return { success: false, error: error.message };
   }
 }
 
 /**
- * Trigger the rewrite-articles task manually.
+ * Trigger the news jobs manually (alias for legacy compatibility).
  */
 export async function triggerRewriteJob() {
-  try {
-    ensureTriggerConfig();
-
-    const handle = await tasks.trigger('rewrite-articles', {
-      manual: true,
-      timestamp: new Date().toISOString(),
-    });
-
-    revalidatePath('/');
-    return { success: true, runId: handle.id };
-  } catch (error) {
-    console.error('Error triggering rewrite job:', error);
-    return { success: false, error: error.message };
-  }
+  return triggerScrapeJob();
 }
 
 /**
- * Trigger the publish-articles task manually.
+ * Trigger the news jobs manually (alias for legacy compatibility).
  */
 export async function triggerPublishJob() {
+  return triggerScrapeJob();
+}
+
+/**
+ * Trigger all pipeline jobs manually.
+ * Also resumes/unpauses all future scheduled runs.
+ */
+export async function triggerAllJobs() {
   try {
     ensureTriggerConfig();
 
-    const handle = await tasks.trigger('publish-articles', {
-      manual: true,
-      timestamp: new Date().toISOString(),
-    });
+    // Resume schedules by setting schedules_paused to false
+    await supabase
+      .from('wp_sync_state')
+      .upsert({
+        id: '00000000-0000-0000-0000-000000000000',
+        sync_config: { schedules_paused: false }
+      });
+
+    const timestamp = new Date().toISOString();
+
+    const [naijanews, gistreel] = await Promise.all([
+      tasks.trigger('naijanews-action', { manual: true, timestamp }),
+      tasks.trigger('gistreel-action', { manual: true, timestamp }),
+    ]);
 
     revalidatePath('/');
-    return { success: true, runId: handle.id };
+    return { 
+      success: true, 
+      runs: {
+        naijanews: naijanews.id,
+        gistreel: gistreel.id,
+      }
+    };
   } catch (error) {
-    console.error('Error triggering publish job:', error);
+    console.error('Error triggering all jobs:', error);
     return { success: false, error: error.message };
   }
 }
 
 /**
  * Stop all currently running/queued jobs.
- * Lists all active runs and cancels each one.
+ * Also pauses all future scheduled runs.
  */
 export async function stopAllJobs() {
   try {
     ensureTriggerConfig();
 
-    let cancelledCount = 0;
+    // Pause schedules by setting schedules_paused to true
+    await supabase
+      .from('wp_sync_state')
+      .upsert({
+        id: '00000000-0000-0000-0000-000000000000',
+        sync_config: { schedules_paused: true }
+      });
 
-    // List all active runs (queued, executing, waiting)
+    let cancelledCount = 0;
+    const activeStatuses = ['QUEUED', 'DEQUEUED', 'EXECUTING', 'WAITING', 'DELAYED', 'PENDING_VERSION'];
+
+    // List all active runs
     for await (const run of runs.list({
-      filter: {
-        status: ['QUEUED', 'DEQUEUED', 'EXECUTING', 'WAITING'],
-      },
+      status: activeStatuses,
     })) {
       try {
         await runs.cancel(run.id);

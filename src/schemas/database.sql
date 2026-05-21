@@ -25,7 +25,10 @@ CREATE TABLE IF NOT EXISTS articles (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     published_at TIMESTAMPTZ,
-    last_error TEXT
+    last_error TEXT,
+    focus_keyphrase TEXT,
+    meta_description TEXT,
+    tags TEXT[]
 );
 
 -- Indexes for performance

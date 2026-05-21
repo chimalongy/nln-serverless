@@ -3,7 +3,7 @@ require('dotenv').config();
 
 /**
  * Database Seed Script
- * Inserts default Nigerian news sources into the database
+ * Inserts GistReel and NaijaNews sources into the database
  */
 async function seedDatabase() {
   const supabaseUrl = process.env.SUPABASE_URL;
@@ -20,93 +20,57 @@ async function seedDatabase() {
 
   const sources = [
     {
-      name: 'Premium Times',
-      base_url: 'https://www.premiumtimesng.com',
-      rss_feed_url: 'https://www.premiumtimesng.com/feed',
+      name: 'GistReel',
+      base_url: 'https://www.gistreel.com',
+      rss_feed_url: null,
       scrape_config: {
-        category_selector: '.cat',
-        title_selector: 'h1.entry-title',
-        content_selector: '.entry-content',
-        article_list_selector: '.jeg_post_title a',
+        type: 'gistreel',
+        pages: ['https://www.gistreel.com'],
+        grid_selector: '.container-wrapper.post-element.tie-standard',
+        list_selector: 'article.post-element',
+        title_selector: 'h2.entry-title a, h2.post-title a',
+        date_selector: '.post-meta .date, .meta-item.date',
+        content_selectors: ['#the-post', '.entry-content', '.single-content', 'article'],
       },
       is_active: true,
     },
     {
-      name: 'Vanguard',
-      base_url: 'https://www.vanguardngr.com',
-      rss_feed_url: 'https://www.vanguardngr.com/feed/',
+      name: 'NaijaNews',
+      base_url: 'https://www.naijanews.com',
+      rss_feed_url: null,
       scrape_config: {
-        category_selector: '.category',
-        title_selector: 'h1.entry-title',
-        content_selector: '.entry-content',
-        article_list_selector: '.entry-title a',
-      },
-      is_active: true,
-    },
-    {
-      name: 'The Guardian Nigeria',
-      base_url: 'https://guardian.ng',
-      rss_feed_url: 'https://guardian.ng/feed/',
-      scrape_config: {
-        category_selector: '.category',
-        title_selector: 'h1.title',
-        content_selector: '.article-content',
-        article_list_selector: '.headline a',
-      },
-      is_active: true,
-    },
-    {
-      name: 'Punch',
-      base_url: 'https://punchng.com',
-      rss_feed_url: 'https://punchng.com/feed/',
-      scrape_config: {
-        category_selector: '.category',
-        title_selector: 'h1.entry-title',
-        content_selector: '.entry-content',
-        article_list_selector: '.entry-title a',
-      },
-      is_active: true,
-    },
-    {
-      name: 'Channels TV',
-      base_url: 'https://www.channelstv.com',
-      rss_feed_url: 'https://www.channelstv.com/feed/',
-      scrape_config: {
-        category_selector: '.category',
-        title_selector: 'h1.entry-title',
-        content_selector: '.entry-content',
-        article_list_selector: '.entry-title a',
-      },
-      is_active: true,
-    },
-    {
-      name: 'Sahara Reporters',
-      base_url: 'https://saharareporters.com',
-      rss_feed_url: 'https://saharareporters.com/rss.xml',
-      scrape_config: {
-        category_selector: '.field-name-field-news-category',
-        title_selector: 'h1.page-title',
-        content_selector: '.field-name-body',
-        article_list_selector: '.field-content a',
-      },
-      is_active: true,
-    },
-    {
-      name: 'Daily Trust',
-      base_url: 'https://dailytrust.com',
-      rss_feed_url: 'https://dailytrust.com/feed/',
-      scrape_config: {
-        category_selector: '.category',
-        title_selector: 'h1.entry-title',
-        content_selector: '.entry-content',
-        article_list_selector: '.entry-title a',
+        type: 'naijanews',
+        pages: [
+          'https://www.naijanews.com',
+          'https://www.naijanews.com/category/nigeria-news/',
+          'https://www.naijanews.com/category/politics/',
+          'https://www.naijanews.com/category/entertainment/',
+          'https://www.naijanews.com/category/sports/',
+          'https://www.naijanews.com/category/technology/',
+        ],
+        article_selector: '.mvp-blog-story-wrap, .mvp-blog-story-out, article',
+        content_selector: '#mvp-content-main p, article p',
+        date_selector: 'time, .mvp-cd-date, .mvp-blog-story-date',
       },
       is_active: true,
     },
   ];
 
-  console.log('Seeding database with default sources...');
+  console.log('Seeding database with GistReel and NaijaNews sources...');
 
+  // Deactivate old sources
+  const { error: deactivateError } = await supabase
+    .from('sources')
+    .update({ is_active: false })
+    .not('name', 'in', '("GistReel","NaijaNews")');
+
+  if (deactivateError) {
+    console.warn('Could not deactivate old sources:', deactivateError.message);
+  } else {
+    console.log('Deactivated old sources');
+  }
+
+  // Upsert new sources
   for (const source of sources) {
     const { error } = await supabase
       .from('sources')

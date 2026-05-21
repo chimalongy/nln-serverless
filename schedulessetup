@@ -1,11 +1,40 @@
-npx @trigger.dev/cli schedule create scrape-articles --cron "*/30 * * * *"
-npx @trigger.dev/cli schedule create rewrite-articles --cron "0 */2 * * *"
-npx @trigger.dev/cli schedule create publish-articles --cron "0 */3 * * *"
-npx @trigger.dev/cli schedule create deduplicate-articles --cron "0 2 * * *"
+# Starting NaijaNews & GistReel Schedules in Trigger.dev v3
 
+Since both jobs (`naijaNewsJob` and `gistReelJob`) use **Declarative Cron Schedules** (defined in code via the `cron` property), you DO NOT need to create schedules manually via the CLI. 
 
-npx trigger.dev@latest schedules create --task scrape-articles --cron "*/30 * * * *"
-npx trigger.dev@latest schedules create --task rewrite-articles --cron "0 */2 * * *"
-npx trigger.dev@latest schedules create --task publish-articles --cron "0 */3 * * *"
-npx trigger.dev@latest schedules create --task deduplicate-articles --cron "0 2 * * *"
+Trigger.dev automatically registers, updates, and starts these schedules when you run the dev server or deploy.
 
+---
+
+## 1. Run Locally (Development)
+
+To test the schedules locally:
+1. Make sure your `.env` file contains your credentials (Supabase, WordPress, etc.).
+2. Run the development server:
+   ```bash
+   npm run dev
+   ```
+3. This CLI command will:
+   - Connect to your Trigger.dev cloud dashboard.
+   - Sync the tasks (`naijanews-action` and `gistreel-action`).
+   - Automatically register and start the schedules in development mode using the cron patterns in your `.env` (default is every 15 minutes).
+
+---
+
+## 2. Deploy to Production
+
+To run the schedules continuously in production:
+1. Deploy your tasks to the Trigger.dev cloud:
+   ```bash
+   npm run deploy
+   ```
+2. The schedules will automatically sync and run on the Trigger.dev cloud runners at the configured intervals.
+
+---
+
+## 3. Manually Triggering (For Testing)
+
+Instead of waiting for the 15-minute cron timer:
+1. Run `npm run dev` and open the local Trigger.dev dashboard link shown in the terminal.
+2. Select either **`naijaNewsJob`** or **`gistReelJob`** from the Tasks list.
+3. Click the **"Trigger Test"** or **"Run Task"** button to trigger a run immediately.

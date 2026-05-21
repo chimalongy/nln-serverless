@@ -70,10 +70,8 @@ const severityConfig = {
 };
 
 const jobIcons = {
-  'scrape-articles': '🔍',
-  'rewrite-articles': '✍️',
-  'publish-articles': '📤',
-  'deduplicate-articles': '🧹',
+  'naijanews-action': '📰',
+  'gistreel-action': '🎬',
 };
 
 export default async function ErrorsPage() {

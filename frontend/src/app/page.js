@@ -23,6 +23,15 @@ async function getStats() {
       counts[row.status] = (counts[row.status] || 0) + 1;
     }
 
+    // Fetch schedules paused state from wp_sync_state
+    const { data: syncState } = await supabase
+      .from('wp_sync_state')
+      .select('sync_config')
+      .eq('id', '00000000-0000-0000-0000-000000000000')
+      .single();
+
+    const schedulesPaused = syncState?.sync_config?.schedules_paused ?? false;
+
     // Recent logs
     const { data: logs } = await supabase
       .from('job_logs')
@@ -30,15 +39,15 @@ async function getStats() {
       .order('created_at', { ascending: false })
       .limit(5);
 
-    return { counts, logs: logs || [] };
+    return { counts, logs: logs || [], schedulesPaused };
   } catch (error) {
     console.error('Failed to fetch stats:', error);
-    return { counts: { pending: 0, rewritten: 0, published: 0, failed: 0 }, logs: [] };
+    return { counts: { pending: 0, rewritten: 0, published: 0, failed: 0 }, logs: [], schedulesPaused: false };
   }
 }
 
 export default async function DashboardPage() {
-  const { counts, logs } = await getStats();
+  const { counts, logs, schedulesPaused } = await getStats();
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
   return (
@@ -50,7 +59,7 @@ export default async function DashboardPage() {
         </div>
         
         {/* Controls */}
-        <ActionButtons />
+        <ActionButtons schedulesPaused={schedulesPaused} />
       </div>
 
       {/* Metrics Grid */}
