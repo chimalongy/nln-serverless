@@ -1,4 +1,4 @@
-import { schedules } from "@trigger.dev/sdk";
+import { schedules, tasks } from "@trigger.dev/sdk";
 import { getSupabase } from "../db/supabase.js";
 import {
   scrapeGistReelRecentPostsGrid,
@@ -175,6 +175,12 @@ export const gistReelJob = schedules.task({
               console.error(`❌ Failed to save article to Supabase: ${insertError.message}`);
             } else {
               console.log(`✅ NEW ARTICLE SAVED at ${new Date().toLocaleTimeString()}`);
+              try {
+                await tasks.trigger("social-media-poster", { article });
+                console.log("📢 Triggered social-media-poster task successfully");
+              } catch (triggerErr) {
+                console.error("❌ Failed to trigger social-media-poster task:", triggerErr.message);
+              }
             }
           } catch (innerErr) {
             totalErrors++;

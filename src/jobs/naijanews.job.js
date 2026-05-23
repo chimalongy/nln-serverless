@@ -1,4 +1,4 @@
-import { schedules } from "@trigger.dev/sdk";
+import { schedules, tasks } from "@trigger.dev/sdk";
 import { getSupabase } from "../db/supabase.js";
 import { scrapeRecentPosts, extractPostContent } from "../services/naijaNewsScraper.js";
 import { NaijaNewsRewrite } from "../services/aiRewriter.js";
@@ -141,6 +141,12 @@ export const naijaNewsJob = schedules.task({
                 console.error(`❌ Failed to save article to Supabase: ${insertError.message}`);
               } else {
                 console.log(`✅ NEW ARTICLE SAVED at ${new Date().toTimeString()}`);
+                try {
+                  await tasks.trigger("social-media-poster", { article });
+                  console.log("📢 Triggered social-media-poster task successfully");
+                } catch (triggerErr) {
+                  console.error("❌ Failed to trigger social-media-poster task:", triggerErr.message);
+                }
               }
             } else {
               console.error(`❌ Failed to publish to WordPress: ${current_link}`);
