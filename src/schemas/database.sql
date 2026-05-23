@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS articles (
     status VARCHAR(50) NOT NULL DEFAULT 'scraped' CHECK (status IN ('scraped', 'rewriting', 'rewritten', 'publishing', 'published', 'failed', 'duplicate', 'archived')),
     wp_post_id BIGINT,
     wp_post_url TEXT,
+    wp_post_featured_image TEXT,
     rewrite_attempts INTEGER DEFAULT 0,
     publish_attempts INTEGER DEFAULT 0,
     scrape_metadata JSONB,

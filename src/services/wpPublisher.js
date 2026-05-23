@@ -170,7 +170,7 @@ async function POSTTOWORDPRESS(data) {
     );
 
     console.log('✅ Post published successfully:', postResponse.data.link);
-    return { success: true, data: postResponse.data };
+    return { success: true, data: postResponse.data, featured_image_url: imageResult.url || null };
   } catch (error) {
     if (error.response) {
       console.error('❌ WordPress API error:', error.response.data);
@@ -245,7 +245,7 @@ async function POSTGISTREELTOWORDPRESS(data) {
     });
 
     console.log(`✅ Published: ${postRes.data.link}`);
-    return { success: true, data: postRes.data };
+    return { success: true, data: postRes.data, featured_image_url: data.featured_image || null };
   } catch (err) {
     if (err.response) {
       console.error('❌ WordPress API error:', err.response.data);

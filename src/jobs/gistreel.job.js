@@ -159,6 +159,7 @@ export const gistReelJob = schedules.task({
               status: "published",
               wp_post_id: wordpressresult.data?.id || null,
               wp_post_url: wordpressresult.data?.link || null,
+              wp_post_featured_image: wordpressresult.featured_image_url || null,
               published_at: new Date().toISOString(),
               scrape_metadata: {
                 keywords: parsedresult.keywords || [],

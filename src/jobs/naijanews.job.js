@@ -125,6 +125,7 @@ export const naijaNewsJob = schedules.task({
                 status: "published",
                 wp_post_id: post_result.data?.id || null,
                 wp_post_url: post_result.data?.link || null,
+                wp_post_featured_image: post_result.featured_image_url || null,
                 published_at: new Date().toISOString(),
                 scrape_metadata: {
                   keywords: parsed.keywords || [],
