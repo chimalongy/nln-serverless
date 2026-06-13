@@ -58,6 +58,12 @@ const config = {
     naijaNews: process.env.NAIJA_NEWS_SCHEDULE || '*/15 * * * *',
     gistReel: process.env.GISTREEL_SCHEDULE || '*/15 * * * *',
   },
+
+  // PostersHive social publishing
+  posthive: {
+    apiKey: process.env.POSTHIVE_API_KEY,
+    apiUrl: process.env.POSTHIVE_API_URL || 'https://postershive.vercel.app/api/publish',
+  },
 };
 
 /**
