@@ -2,22 +2,41 @@ import { supabase } from '@/lib/supabase';
 import { formatDistanceToNow } from 'date-fns';
 import { Search, Filter, ExternalLink } from 'lucide-react';
 import { ArticleThumbnail } from '@/app/components/ArticleThumbnail';
+import { SocialPlatformBadges } from '@/app/components/SocialPlatformBadges';
 
 export const revalidate = 60;
 
+const ARTICLE_COLUMNS =
+  'id, original_title, rewritten_title, source_name, source_url, wp_post_url, original_image_url, wp_post_featured_image, status, created_at, social_posts';
+
+const ARTICLE_COLUMNS_FALLBACK =
+  'id, original_title, rewritten_title, source_name, source_url, wp_post_url, original_image_url, wp_post_featured_image, status, created_at';
+
 async function getArticles() {
   try {
-    const { data } = await supabase
+    let { data, error } = await supabase
       .from('articles')
-      .select(
-        'id, original_title, rewritten_title, source_name, source_url, wp_post_url, original_image_url, wp_post_featured_image, status, created_at'
-      )
+      .select(ARTICLE_COLUMNS)
       .order('created_at', { ascending: false })
       .limit(50);
-    return data || [];
+
+    if (error?.code === '42703' && error.message?.includes('social_posts')) {
+      ({ data, error } = await supabase
+        .from('articles')
+        .select(ARTICLE_COLUMNS_FALLBACK)
+        .order('created_at', { ascending: false })
+        .limit(50));
+    }
+
+    if (error) {
+      console.error('Failed to fetch articles:', error);
+      return { articles: [], error: error.message };
+    }
+
+    return { articles: data || [], error: null };
   } catch (error) {
     console.error('Failed to fetch articles:', error);
-    return [];
+    return { articles: [], error: error.message };
   }
 }
 
@@ -30,7 +49,7 @@ function getFeaturedImage(article) {
 }
 
 export default async function ArticlesPage() {
-  const articles = await getArticles();
+  const { articles, error } = await getArticles();
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -57,7 +76,9 @@ export default async function ArticlesPage() {
       </div>
 
       <div className="glass-panel overflow-hidden border border-slate-700/50">
-        {articles.length === 0 ? (
+        {error ? (
+          <p className="px-6 py-12 text-center text-red-400">Failed to load articles: {error}</p>
+        ) : articles.length === 0 ? (
           <p className="px-6 py-12 text-center text-slate-500">No articles found in the database.</p>
         ) : (
           <ul className="divide-y divide-slate-700/50">
@@ -87,6 +108,8 @@ export default async function ArticlesPage() {
                               : 'N/A'}
                           </span>
                         </div>
+
+                        <SocialPlatformBadges socialPosts={article.social_posts} />
 
                         {article.rewritten_title &&
                           article.original_title &&

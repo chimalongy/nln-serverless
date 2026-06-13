@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS articles (
     last_error TEXT,
     focus_keyphrase TEXT,
     meta_description TEXT,
-    tags TEXT[]
+    tags TEXT[],
+    social_posts JSONB DEFAULT '{}'
 );
 
 -- Indexes for performance
